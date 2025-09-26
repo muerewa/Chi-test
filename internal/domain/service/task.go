@@ -25,3 +25,40 @@ func NewTaskService(repo TaskRepository) *TaskService {
 		validator: validator.New(),
 	}
 }
+
+func (s *TaskService) GetTask(ctx context.Context, id int64) (*models.Task, error) {
+	task, err := s.repo.FetchById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return task, nil
+}
+
+func (s *TaskService) CreateTask(ctx context.Context, task *models.Task) (int64, error) {
+	err := s.validator.Struct(task)
+	if err != nil {
+		return 0, err
+	}
+	res, err := s.repo.CreateTask(ctx, task)
+	if err != nil {
+		return 0, err
+	}
+	return res, nil
+}
+
+func (s *TaskService) UpdateTask(ctx context.Context, id int64, task *models.Task) (*models.Task, error) {
+	err := s.validator.Struct(task)
+	if err != nil {
+		return nil, err
+	}
+	res, err := s.repo.UpdateTask(ctx, task)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
+func (s *TaskService) DeleteTask(ctx context.Context, id int64) error {
+	err := s.repo.DeleteTask(ctx, id)
+	return err
+}
