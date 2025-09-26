@@ -10,7 +10,7 @@ import (
 type TaskRepository interface {
 	FetchById(ctx context.Context, id int64) (*models.Task, error)
 	CreateTask(ctx context.Context, task *models.Task) (int64, error)
-	UpdateTask(ctx context.Context, task *models.Task) (*models.Task, error)
+	UpdateTask(ctx context.Context, id int64, task *models.Task) (*models.Task, error)
 	DeleteTask(ctx context.Context, id int64) error
 }
 
@@ -51,7 +51,7 @@ func (s *TaskService) UpdateTask(ctx context.Context, id int64, task *models.Tas
 	if err != nil {
 		return nil, err
 	}
-	res, err := s.repo.UpdateTask(ctx, task)
+	res, err := s.repo.UpdateTask(ctx, id, task)
 	if err != nil {
 		return nil, err
 	}

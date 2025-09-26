@@ -45,10 +45,10 @@ func (db *DB) CreateTask(ctx context.Context, task *models.Task) (int64, error) 
 	return id, nil
 }
 
-func (db *DB) UpdateTask(ctx context.Context, task *models.Task) (*models.Task, error) {
+func (db *DB) UpdateTask(ctx context.Context, id int64, task *models.Task) (*models.Task, error) {
 	var updatedTask models.Task
 	err := db.db.QueryRow(ctx, "UPDATE tasks SET title = $1, description = $2, completed = $3 WHERE id = $4"+
-		"RETURNING id, title, description, completed, created_at", task.Title, task.Description, task.Completed, task.ID).
+		"RETURNING id, title, description, completed, created_at", task.Title, task.Description, task.Completed, id).
 		Scan(&updatedTask.ID, &updatedTask.Title, &updatedTask.Description, &updatedTask.Completed, &updatedTask.CreatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
