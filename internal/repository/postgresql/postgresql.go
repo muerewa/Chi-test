@@ -5,6 +5,7 @@ import (
 	"Chi-test/internal/repository"
 	"context"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -23,7 +24,7 @@ func New(conn string) (*DB, error) {
 
 func (db *DB) FetchById(ctx context.Context, id int64) (*models.Task, error) {
 	var task models.Task
-	err := db.db.QueryRow(ctx, "SELECT * FROM tasks WHERE id = $1", id).Scan(&task)
+	err := db.db.QueryRow(ctx, "SELECT * FROM tasks WHERE id = $1", id).Scan(&task.ID, &task.Title, &task.Description, &task.Completed, &task.CreatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, repository.ErrTaskNotFound
@@ -35,7 +36,7 @@ func (db *DB) FetchById(ctx context.Context, id int64) (*models.Task, error) {
 
 func (db *DB) CreateTask(ctx context.Context, task *models.Task) (int64, error) {
 	var id int64
-	err := db.db.QueryRow(ctx, "INSERT INTO tasks (title, description, completed, CreatedAt) VALUES ($1, $2, $3, $4) RETURNING id", task.Title, task.Description, task.Completed, task.CreatedAt).Scan(&id)
+	err := db.db.QueryRow(ctx, "INSERT INTO tasks (title, description, completed, created_at) VALUES ($1, $2, $3, $4) RETURNING id", task.Title, task.Description, task.Completed, time.Now()).Scan(&id)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return 0, repository.ErrTaskNotFound
@@ -48,7 +49,7 @@ func (db *DB) CreateTask(ctx context.Context, task *models.Task) (int64, error) 
 func (db *DB) UpdateTask(ctx context.Context, id int64, task *models.Task) (*models.Task, error) {
 	var updatedTask models.Task
 	err := db.db.QueryRow(ctx, "UPDATE tasks SET title = $1, description = $2, completed = $3 WHERE id = $4"+
-		"RETURNING id, title, description, completed, created_at", task.Title, task.Description, task.Completed, id).
+		" RETURNING id, title, description, completed, created_at", task.Title, task.Description, task.Completed, id).
 		Scan(&updatedTask.ID, &updatedTask.Title, &updatedTask.Description, &updatedTask.Completed, &updatedTask.CreatedAt)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
